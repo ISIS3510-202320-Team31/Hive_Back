@@ -40,6 +40,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'event',
+    'user',
+    'tag',
     # 
 ]
 
@@ -77,13 +80,19 @@ WSGI_APPLICATION = 'hive_back.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    'default' : {                                    # conveniently, postgres on supabase as well
+        'ENGINE' : 'django.db.backends.postgresql',
+        'NAME' : 'postgres',
+        'HOST' : os.environ.get('SUPABASE_HOST'),
+        'PASSWORD': os.environ.get('SUPABASE_PW'),
+        'PORT': 5432,
+        'USER': 'postgres',
+        'CERT' : 'hive_back.prod-ca-2021.crt',             # download this from database/settings and put in your main app folder
     }
 }
-
+DATABASE_ROUTERS = ['hive_back.routers.CustomRouter']      # don't forget to set this variable so django knows where to find the router
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
