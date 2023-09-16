@@ -7,7 +7,6 @@ from user.models import User
 from tag.models import Tag
 
 class Event(models.Model):
-    _DATABASE = 'remotedata'
     class Category(models.TextChoices):
         ACADEMIC="ACADEMIC"
         CULTURAL="CULTURAL"

@@ -5,7 +5,6 @@ from sqlalchemy.dialects.postgresql import UUID, ENUM, JSON
 from enum import Enum
 
 class Tag(models.Model):
-    _DATABASE = 'remotedata'
 
     name = models.CharField(max_length=50)
 

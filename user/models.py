@@ -6,7 +6,6 @@ from enum import Enum
 from tag.models import Tag
 
 class User(models.Model):
-    _DATABASE = 'remotedata'
 
     class Role(models.TextChoices):
         STUDENTS = "STUDENT"
