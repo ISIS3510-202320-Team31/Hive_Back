@@ -15,9 +15,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from event.views import index as event_index
+from event.views import index_list as event_index_list
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('events/', event_index, name='events')
+    path('events/', event_index_list, name='events')
 ]
