@@ -12,8 +12,8 @@ import json
 def index_list(request):
     if request.method == 'GET':
         events = Event.objects.all()
-        data = serializers.serialize('json', events)
-        return JsonResponse(data, safe=False)
+        event_data = list(events.values())
+        return JsonResponse(event_data, safe=False, json_dumps_params={'indent': 4})
 
     if request.method == 'POST':
         data = json.loads(request.body)
