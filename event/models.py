@@ -5,6 +5,7 @@ from sqlalchemy.dialects.postgresql import UUID, ENUM, JSON
 from enum import Enum
 from user.models import User
 from tag.models import Tag
+from link.models import Link
 
 class Event(models.Model):
     class Category(models.TextChoices):
@@ -21,13 +22,13 @@ class Event(models.Model):
     date = models.DateField()
     description = models.CharField(max_length=50)
     num_participants = models.IntegerField() 
-    links = models.CharField(max_length=1000)
     category = models.CharField(max_length=20,choices=Category.choices,default=Category.OTHER)
     state = models.BooleanField(default=True)
     duration = models.IntegerField()
     creator = models.ForeignKey(User, on_delete=models.CASCADE)
     participants = models.ManyToManyField(User, related_name='participants')
     tags = models.ManyToManyField(Tag, related_name='tags')
+    links = models.ManyToManyField(Link, related_name='links')
 
     def __str__(self):
         return self.name
