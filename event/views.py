@@ -16,7 +16,7 @@ def index_list(request):
     if request.method == 'POST':
         data = json.loads(request.body)
 
-        user = User.objects.get(pk=int(data['creator']))
+        user = User.objects.get(pk=data['creator'])
         data['creator'] = user
 
         event = Event(**data)
