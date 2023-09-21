@@ -1,7 +1,4 @@
 from django.db import models
-from sqlalchemy import Column, String, Float
-from sqlalchemy.orm import DeclarativeBase
-from sqlalchemy.dialects.postgresql import UUID, ENUM, JSON
 from enum import Enum
 import uuid
 
