@@ -4,6 +4,7 @@ from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.dialects.postgresql import UUID, ENUM, JSON
 from enum import Enum
 from tag.models import Tag
+import uuid
 
 class User(models.Model):
 
@@ -51,7 +52,7 @@ class User(models.Model):
         QUIMICA="QUIMICA"
         OTRO="OTRO"
 
-    id = models.AutoField(primary_key=True)
+    id = models.UUIDField( primary_key = True, default = uuid.uuid4, editable = False)
     icon = models.CharField(max_length=50)
     login = models.CharField(max_length=50)
     name = models.CharField(max_length=50)

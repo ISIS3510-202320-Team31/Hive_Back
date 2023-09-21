@@ -6,6 +6,7 @@ from enum import Enum
 from user.models import User
 from tag.models import Tag
 from link.models import Link
+import uuid
 
 class Event(models.Model):
     class Category(models.TextChoices):
@@ -15,7 +16,7 @@ class Event(models.Model):
         ENTERTAINMENT="ENTERTAINMENT"
         OTHER="OTHER"
 
-    id = models.AutoField(primary_key=True)
+    id = models.UUIDField( primary_key = True, default = uuid.uuid4, editable = False)
     image = models.CharField(max_length=50)
     name = models.CharField(max_length=50)
     place = models.CharField(max_length=50)
