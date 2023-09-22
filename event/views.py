@@ -11,6 +11,11 @@ def index_list(request):
     if request.method == 'GET':
         events = Event.objects.all()
         event_data = list(events.values())
+        
+        # Add the creator name to the event
+        for event in event_data:
+            event['creator'] = User.objects.get(pk=event['creator_id']).name
+
         return JsonResponse(event_data, safe=False, json_dumps_params={'indent': 4})
 
     if request.method == 'POST':
