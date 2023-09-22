@@ -29,7 +29,6 @@ def index_list(request):
         event.save()
         return JsonResponse({'message': 'Event created successfully'})
 
-"""
 @csrf_exempt
 def index_detail(request, pk):
     try:
@@ -38,11 +37,24 @@ def index_detail(request, pk):
         return JsonResponse({'message': 'The event does not exist'}, status=404)
 
     if request.method == 'GET':
-        # Serializa el objeto Event y convierte la representación JSON en un diccionario de Python
-        event_data = json.loads(event.serialize())
-
-        # Elimina la información del modelo y el campo 'pk'
-        event_data = event_data[0]['fields']
+        
+        # Transform event into JSON format 
+        event_data = {
+            'id': event.id,
+            'image': event.image,
+            'name': event.name,
+            'place': event.place,
+            'date': event.date,
+            'description': event.description,
+            'num_participants': event.num_participants,
+            'category': event.category,
+            'state': event.state,
+            'duration': event.duration,
+            'creator': event.creator.name,
+            'participants': list(event.participants.values()),
+            'tags': list(event.tags.values()),
+            'links': list(event.links.values())
+        }
 
         return JsonResponse(event_data, safe=False, json_dumps_params={'indent': 4})
 
@@ -60,4 +72,3 @@ def index_detail(request, pk):
     if request.method == 'DELETE':
         event.delete()
         return JsonResponse({'message': 'Event deleted successfully'})
-"""
