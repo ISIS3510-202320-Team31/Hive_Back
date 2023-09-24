@@ -15,6 +15,10 @@ def index_list(request):
         # Add the creator name to the event
         for event in event_data:
             event['creator'] = User.objects.get(pk=event['creator_id']).name
+            indiv_event = Event.objects.get(pk=event['id'])
+            event['participants'] = list(indiv_event.participants.values())
+            event['tags'] = list(indiv_event.tags.values())
+            event['links'] = list(indiv_event.links.values())
 
         return JsonResponse(event_data, safe=False, json_dumps_params={'indent': 4})
 
@@ -72,3 +76,21 @@ def index_detail(request, pk):
     if request.method == 'DELETE':
         event.delete()
         return JsonResponse({'message': 'Event deleted successfully'})
+    
+@csrf_exempt
+def index_participants(request, pk):
+    try:
+        event = Event.objects.get(pk=pk)
+    except Event.DoesNotExist:
+        return JsonResponse({'message': 'The event does not exist'}, status=404)
+
+    if request.method == 'GET':
+        participants = list(event.participants.values())
+        return JsonResponse(participants, safe=False, json_dumps_params={'indent': 4})
+
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        user = User.objects.get(pk=data['id_participant'])
+        event.participants.add(user)
+        event.save()
+        return JsonResponse({'message': 'Participant added successfully'})
