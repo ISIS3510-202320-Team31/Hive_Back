@@ -94,3 +94,19 @@ def index_participants(request, pk):
         event.participants.add(user)
         event.save()
         return JsonResponse({'message': 'Participant added successfully'})
+
+@csrf_exempt
+def index_list_by_date(request, date):
+    if request.method == 'GET':
+        events = Event.objects.filter(date=date)
+        event_data = list(events.values())
+        
+        # Add the creator name to the event
+        for event in event_data:
+            event['creator'] = User.objects.get(pk=event['creator_id']).name
+            indiv_event = Event.objects.get(pk=event['id'])
+            event['participants'] = list(indiv_event.participants.values())
+            event['tags'] = list(indiv_event.tags.values())
+            event['links'] = list(indiv_event.links.values())
+
+        return JsonResponse(event_data, safe=False, json_dumps_params={'indent': 4})

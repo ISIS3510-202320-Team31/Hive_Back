@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from event.views import index_list as event_index_list, index_detail as event_index_detail, index_participants as event_index_participants
+from event.views import index_list as event_index_list, index_detail as event_index_detail, index_participants as event_index_participants, index_list_by_date as event_index_list_by_date
 from user.views import index_list as user_index_list#, index_detail as event_index_detail
 from weight.views import index_list as weight_index_list, index_detail as weight_index_detail, index_user as weight_index_user, index_tag as weight_index_tag
 
@@ -24,6 +24,7 @@ urlpatterns = [
     path('events/', event_index_list, name='event_list'),
     path('events/<str:pk>/', event_index_detail, name='event_detail'),
     path('events/<str:pk>/participants/', event_index_participants, name='event_participants'),
+    path('events/date/<str:date>/', event_index_list_by_date, name='event_list_by_date'),
     path('users/', user_index_list, name='user_list'),
     path('weights/', weight_index_list, name='weight_list'),
     path('weights/<str:pk>/', weight_index_detail, name='weight_detail'),
