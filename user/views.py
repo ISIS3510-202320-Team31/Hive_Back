@@ -40,3 +40,41 @@ def index_list(request):
         event = User(**data)
         event.save()
         return JsonResponse({'message': 'User created successfully'})
+
+@csrf_exempt
+def index_one(request, user_id):
+    if request.method == 'GET':
+        user = User.objects.get(id=user_id)
+        user_data = {
+            'id': user.id,
+            'icon': user.icon,
+            'login': user.login,
+            'name': user.name,
+            'password': user.password,
+            'email': user.email,
+            'verificated': user.verificated,
+            'role': user.role,
+            'career': user.career,
+            'birthdate': user.birthdate,
+        }
+        return JsonResponse(user_data, json_dumps_params={'indent': 4})
+    
+    if request.method == 'DELETE':
+        user = User.objects.get(id=user_id)
+        user.delete()
+        return JsonResponse({'message': 'User deleted successfully'})
+    
+    if request.method == 'PUT':
+        data = json.loads(request.body)
+        user = User.objects.get(id=user_id)
+        user.icon = data['icon']
+        user.login = data['login']
+        user.name = data['name']
+        user.password = data['password']
+        user.email = data['email']
+        user.verificated = data['verificated']
+        user.role = data['role']
+        user.career = data['career']
+        user.birthdate = data['birthdate']
+        user.save()
+        return JsonResponse({'message': 'User updated successfully'})
