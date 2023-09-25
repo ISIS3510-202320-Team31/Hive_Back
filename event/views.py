@@ -14,11 +14,28 @@ def index_list(request):
         
         # Add the creator name to the event
         for event in event_data:
+            links_complete = []
+            tags_complete = []
+            participants_complete = []
             event['creator'] = User.objects.get(pk=event['creator_id']).name
             indiv_event = Event.objects.get(pk=event['id'])
-            event['participants'] = list(indiv_event.participants.values())
-            event['tags'] = list(indiv_event.tags.values())
-            event['links'] = list(indiv_event.links.values())
+            
+            # Add the participants, tags and links to the event, but only their ids
+            # The frontend will have to make a request to get the data of each participant, tag and link
+            participants = list(indiv_event.participants.values())
+            tags = list(indiv_event.tags.values())
+            links = list(indiv_event.links.values())
+
+            for participant in participants:
+                participants_complete.append(participant['id'])
+            for tag in tags:
+                tags_complete.append(tag['id'])
+            for link in links:
+                links_complete.append(link['id'])
+            
+            event['participants'] = participants_complete
+            event['tags'] = tags_complete
+            event['links'] = links_complete
 
         return JsonResponse(event_data, safe=False, json_dumps_params={'indent': 4})
 
