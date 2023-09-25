@@ -19,6 +19,10 @@ def index_list(request):
             events_participated = []
             user['events_created'] = list(Event.objects.filter(creator=user['id']).values())
 
+            # Add the name of the creator to the event
+            for event in user['events_created']:
+                event['creator'] = User.objects.get(pk=event['creator_id']).name
+
             for event in events:
                 participants = list(event.participants.values())
                 for participant in participants:
