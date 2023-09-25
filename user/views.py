@@ -17,30 +17,17 @@ def index_list(request):
         # Get the events created by the user
         for user in users_data:
             events_participated = []
-            user['events_created'] = list(Event.objects.filter(creator=user['id']).values())
+            user['events_created'] = []
 
-            # Add the name of the creator to the event
-            for event in user['events_created']:
-                event['creator'] = User.objects.get(pk=event['creator_id']).name
-
+            # Add in events created the IDs of the events created by the user
             for event in events:
+                if event.creator.id == user['id']:
+                    user['events_created'].append(event.id)
+                
                 participants = list(event.participants.values())
                 for participant in participants:
                     if participant['id'] == user['id']:
-                        event_p = {
-                            'id': event.id,
-                            'image': event.image,
-                            'name': event.name,
-                            'place': event.place,
-                            'date': event.date,
-                            'description': event.description,
-                            'num_participants': event.num_participants,
-                            'category': event.category,
-                            'state': event.state,
-                            'duration': event.duration,
-                            'creator_id': event.creator.id,
-                            'creator': event.creator.name,
-                        }
+                        event_p = event.id
                         events_participated.append(event_p)
             user['events_participated'] = events_participated
 
