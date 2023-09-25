@@ -34,6 +34,7 @@ def index_list(request):
                             'category': event.category,
                             'state': event.state,
                             'duration': event.duration,
+                            'creator_id': event.creator.id,
                             'creator': event.creator.name,
                         }
                         events_participated.append(event_p)
