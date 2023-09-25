@@ -43,7 +43,8 @@ INSTALLED_APPS = [
     'event',
     'user',
     'tag',
-    'link'
+    'link',
+    'weight'
 ]
 
 MIDDLEWARE = [
