@@ -16,7 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from event.views import index_list as event_index_list, index_detail as event_index_detail, index_participants as event_index_participants
-from user.views import index_list as user_index_list#, index_detail as event_index_detail
+from user.views import index_list as user_index_list, index_one as user_index_one
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -24,4 +24,5 @@ urlpatterns = [
     path('events/<str:pk>/', event_index_detail, name='event_detail'),
     path('events/<str:pk>/participants/', event_index_participants, name='event_participants'),
     path('users/', user_index_list, name='user_list'),
+    path('users/<uuid:user_id>/', user_index_one, name='user_one')
 ]
