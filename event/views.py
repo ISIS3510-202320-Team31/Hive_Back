@@ -80,6 +80,36 @@ def index_detail(request, pk):
             'links': list(event.links.values())
         }
 
+        # Change tag object for only the name and link object for only the text
+        tag_complete = []
+        for tag in event_data['tags']:
+            tag.pop('id')
+            tag_complete.append(tag['name'])
+        event_data['tags'] = tag_complete
+
+        link_complete = []
+        for link in event_data['links']:
+            link.pop('id')
+            link_complete.append(link['text'])
+        
+        event_data['links'] = link_complete
+
+        participants_complete = []
+        for participant in event_data['participants']:
+            participant.pop('name')
+            participant.pop('icon')
+            participant.pop('login')
+            participant.pop('password')
+            participant.pop('email')
+            participant.pop('verificated')
+            participant.pop('role')
+            participant.pop('career')
+            participant.pop('birthdate')
+            participants_complete.append(participant['id'])
+
+        event_data['participants'] = participants_complete
+        
+
         return JsonResponse(event_data, safe=False, json_dumps_params={'indent': 4})
 
     elif request.method == 'PUT':
