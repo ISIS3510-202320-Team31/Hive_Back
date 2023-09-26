@@ -35,11 +35,14 @@ def index_list(request):
 
         return JsonResponse(users_data, safe=False, json_dumps_params={'indent': 4})
 
-    if request.method == 'POST':
+    elif request.method == 'POST':
         data = json.loads(request.body)
         event = User(**data)
         event.save()
         return JsonResponse({'message': 'User created successfully'})
+    
+    else:
+        return JsonResponse({'message': 'The request must be a GET or POST'}, status=400)
 
 @csrf_exempt
 def index_one(request, user_id):
@@ -59,12 +62,12 @@ def index_one(request, user_id):
         }
         return JsonResponse(user_data, json_dumps_params={'indent': 4})
     
-    if request.method == 'DELETE':
+    elif request.method == 'DELETE':
         user = User.objects.get(id=user_id)
         user.delete()
         return JsonResponse({'message': 'User deleted successfully'})
     
-    if request.method == 'PUT':
+    elif request.method == 'PUT':
         data = json.loads(request.body)
         user = User.objects.get(id=user_id)
         user.icon = data['icon']
@@ -78,3 +81,42 @@ def index_one(request, user_id):
         user.birthdate = data['birthdate']
         user.save()
         return JsonResponse({'message': 'User updated successfully'})
+    
+    else:
+        return JsonResponse({'message': 'The request must be a GET, PUT or DELETE'}, status=400)
+
+@csrf_exempt
+def index_events_list(request, user_id):
+    if request.method == 'GET':
+        user = User.objects.get(id=user_id)
+        events = Event.objects.all()
+        events_data = []
+
+        for event in events:
+            # all events where user is creator or participant
+            if event.creator.id == user.id or user in event.participants.all():
+                events_data.append(event.id)
+        
+        return JsonResponse(events_data, safe=False, json_dumps_params={'indent': 4})
+    
+    else:
+        return JsonResponse({'message': 'The request must be a GET'}, status=400)
+
+@csrf_exempt
+def index_events_one(request, user_id, event_id):
+    if request.method == 'POST':
+        user = User.objects.get(id=user_id)
+        event = Event.objects.get(id=event_id)
+        event.participants.add(user)
+        event.save()
+        return JsonResponse({'message': 'User added as participant successfully'})
+    
+    elif request.method == 'DELETE':
+        user = User.objects.get(id=user_id)
+        event = Event.objects.get(id=event_id)
+        event.participants.remove(user)
+        event.save()
+        return JsonResponse({'message': 'User removed as participant successfully'})
+    
+    else:
+        return JsonResponse({'message': 'The request must be a POST or DELETE'}, status=400)

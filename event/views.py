@@ -29,9 +29,9 @@ def index_list(request):
             for participant in participants:
                 participants_complete.append(participant['id'])
             for tag in tags:
-                tags_complete.append(tag['id'])
+                tags_complete.append(tag['name'])
             for link in links:
-                links_complete.append(link['id'])
+                links_complete.append(link['text'])
             
             event['participants'] = participants_complete
             event['tags'] = tags_complete
@@ -39,7 +39,7 @@ def index_list(request):
 
         return JsonResponse(event_data, safe=False, json_dumps_params={'indent': 4})
 
-    if request.method == 'POST':
+    elif request.method == 'POST':
         data = json.loads(request.body)
 
         user = User.objects.get(pk=data['creator'])
@@ -49,6 +49,9 @@ def index_list(request):
         event.creator = user
         event.save()
         return JsonResponse({'message': 'Event created successfully'})
+
+    else:
+        return JsonResponse({'message': 'The request must be a GET or POST'}, status=400)
 
 @csrf_exempt
 def index_detail(request, pk):
@@ -79,7 +82,7 @@ def index_detail(request, pk):
 
         return JsonResponse(event_data, safe=False, json_dumps_params={'indent': 4})
 
-    if request.method == 'PUT':
+    elif request.method == 'PUT':
         data = json.loads(request.body)
 
         user = User.objects.get(pk=int(data['creator']))
@@ -90,9 +93,12 @@ def index_detail(request, pk):
         event.save()
         return JsonResponse({'message': 'Event updated successfully'})
 
-    if request.method == 'DELETE':
+    elif request.method == 'DELETE':
         event.delete()
         return JsonResponse({'message': 'Event deleted successfully'})
+
+    else:
+        return JsonResponse({'message': 'The request must be a GET, PUT or DELETE'}, status=400)
     
 @csrf_exempt
 def index_participants(request, pk):
@@ -105,7 +111,7 @@ def index_participants(request, pk):
         participants = list(event.participants.values())
         return JsonResponse(participants, safe=False, json_dumps_params={'indent': 4})
 
-    if request.method == 'POST':
+    elif request.method == 'POST':
         data = json.loads(request.body)
         user = User.objects.get(pk=data['id_participant'])
         event.participants.add(user)
@@ -129,3 +135,5 @@ def index_list_by_date(request, date):
                 event_data_grouped[str(event['date'])] = [event]
                 
         return JsonResponse(event_data_grouped, safe=False, json_dumps_params={'indent': 4})
+    else:
+        return JsonResponse({'message': 'The request must be a GET or POST'}, status=400)
