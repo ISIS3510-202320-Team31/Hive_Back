@@ -115,15 +115,17 @@ def index_participants(request, pk):
 @csrf_exempt
 def index_list_by_date(request, date):
     if request.method == 'GET':
-        events = Event.objects.filter(date=date)
+        
+        #Get the eventes that match the date or are after the date given and order them by date
+        events = Event.objects.filter(date__gte=date).order_by('date')
         event_data = list(events.values())
         
-        # Add the creator name to the event
+        # Group by day, make an object with the date as key and the events as value
+        event_data_grouped = {}
         for event in event_data:
-            event['creator'] = User.objects.get(pk=event['creator_id']).name
-            indiv_event = Event.objects.get(pk=event['id'])
-            event['participants'] = list(indiv_event.participants.values())
-            event['tags'] = list(indiv_event.tags.values())
-            event['links'] = list(indiv_event.links.values())
-
-        return JsonResponse(event_data, safe=False, json_dumps_params={'indent': 4})
+            if str(event['date']) in event_data_grouped:
+                event_data_grouped[str(event['date'])].append(event)
+            else:
+                event_data_grouped[str(event['date'])] = [event]
+                
+        return JsonResponse(event_data_grouped, safe=False, json_dumps_params={'indent': 4})
