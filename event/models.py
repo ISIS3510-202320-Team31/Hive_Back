@@ -18,7 +18,7 @@ class Event(models.Model):
     name = models.CharField(max_length=50)
     place = models.CharField(max_length=50)
     date = models.DateField()
-    description = models.CharField(max_length=50)
+    description = models.CharField(max_length=500)
     num_participants = models.IntegerField(null = True) 
     category = models.CharField(max_length=20,choices=Category.choices,default=Category.OTHER)
     state = models.BooleanField(default=True)
