@@ -29,9 +29,9 @@ def index_list(request):
             for participant in participants:
                 participants_complete.append(participant['id'])
             for tag in tags:
-                tags_complete.append(tag['id'])
+                tags_complete.append(tag['name'])
             for link in links:
-                links_complete.append(link['id'])
+                links_complete.append(link['text'])
             
             event['participants'] = participants_complete
             event['tags'] = tags_complete
