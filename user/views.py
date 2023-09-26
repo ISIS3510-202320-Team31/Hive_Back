@@ -2,8 +2,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from .models import User
 from event.models import Event
-#from event.models import Event
 import json
+from utils.utils import convert_to_json, assign_from_dict
 
 # JSON format, CRUD
 
@@ -30,16 +30,15 @@ def index_list(request):
                         event_p = event.id
                         events_participated.append(event_p)
             user['events_participated'] = events_participated
-
-
-
         return JsonResponse(users_data, safe=False, json_dumps_params={'indent': 4})
 
     elif request.method == 'POST':
         data = json.loads(request.body)
-        event = User(**data)
-        event.save()
-        return JsonResponse({'message': 'User created successfully'})
+        user = User(**data)
+        user.save()
+        user_data = convert_to_json(user)
+        return JsonResponse(user_data, json_dumps_params={'indent': 4}, status=201)
+        
     
     else:
         return JsonResponse({'message': 'The request must be a GET or POST'}, status=400)
@@ -48,39 +47,21 @@ def index_list(request):
 def index_one(request, user_id):
     if request.method == 'GET':
         user = User.objects.get(id=user_id)
-        user_data = {
-            'id': user.id,
-            'icon': user.icon,
-            'login': user.login,
-            'name': user.name,
-            'password': user.password,
-            'email': user.email,
-            'verificated': user.verificated,
-            'role': user.role,
-            'career': user.career,
-            'birthdate': user.birthdate,
-        }
+        user_data = convert_to_json(user)
+        return JsonResponse(user_data, json_dumps_params={'indent': 4})
+    
+    elif request.method == 'PUT':
+        data = json.loads(request.body)
+        user = User.objects.get(id=user_id)
+        assign_from_dict(user, data)
+        user.save()
+        user_data = convert_to_json(user)
         return JsonResponse(user_data, json_dumps_params={'indent': 4})
     
     elif request.method == 'DELETE':
         user = User.objects.get(id=user_id)
         user.delete()
-        return JsonResponse({'message': 'User deleted successfully'})
-    
-    elif request.method == 'PUT':
-        data = json.loads(request.body)
-        user = User.objects.get(id=user_id)
-        user.icon = data['icon']
-        user.login = data['login']
-        user.name = data['name']
-        user.password = data['password']
-        user.email = data['email']
-        user.verificated = data['verificated']
-        user.role = data['role']
-        user.career = data['career']
-        user.birthdate = data['birthdate']
-        user.save()
-        return JsonResponse({'message': 'User updated successfully'})
+        return JsonResponse({'message': f'User {user_id} deleted successfully'})
     
     else:
         return JsonResponse({'message': 'The request must be a GET, PUT or DELETE'}, status=400)
@@ -109,14 +90,14 @@ def index_events_one(request, user_id, event_id):
         event = Event.objects.get(id=event_id)
         event.participants.add(user)
         event.save()
-        return JsonResponse({'message': 'User added as participant successfully'})
+        return JsonResponse({'message': f'User {user_id} added as participant of event {event_id} successfully'})
     
     elif request.method == 'DELETE':
         user = User.objects.get(id=user_id)
         event = Event.objects.get(id=event_id)
         event.participants.remove(user)
         event.save()
-        return JsonResponse({'message': 'User removed as participant successfully'})
+        return JsonResponse({'message': f'User {user_id} removed as participant of event {event_id} successfully'})
     
     else:
         return JsonResponse({'message': 'The request must be a POST or DELETE'}, status=400)

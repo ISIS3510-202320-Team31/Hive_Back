@@ -5,6 +5,7 @@ from user.models import User
 from tag.models import Tag
 from link.models import Link
 import json
+from utils.utils import convert_to_json, assign_from_dict
 
 # JSON format, CRUD
 
@@ -72,7 +73,8 @@ def index_list(request):
         event.tags.set(tags_object)
         event.links.set(links_object)
 
-        return JsonResponse({'message': 'Event created successfully'})
+        event_data = convert_to_json(event)
+        return JsonResponse(event_data, json_dumps_params={'indent': 4}, status=201)
 
     else:
         return JsonResponse({'message': 'The request must be a GET or POST'}, status=400)
@@ -85,24 +87,12 @@ def index_detail(request, pk):
         return JsonResponse({'message': 'The event does not exist'}, status=404)
 
     if request.method == 'GET':
-        
         # Transform event into JSON format 
-        event_data = {
-            'id': event.id,
-            'image': event.image,
-            'name': event.name,
-            'place': event.place,
-            'date': event.date,
-            'description': event.description,
-            'num_participants': event.num_participants,
-            'category': event.category,
-            'state': event.state,
-            'duration': event.duration,
-            'creator': event.creator.name,
-            'participants': list(event.participants.values()),
-            'tags': list(event.tags.values()),
-            'links': list(event.links.values())
-        }
+        event_data = convert_to_json(event)
+
+        event_data['participants'] = list(event.participants.values())
+        event_data['tags'] = list(event.tags.values())
+        event_data['links'] = list(event.links.values())
 
         # Change tag object for only the name and link object for only the text
         tag_complete = []
@@ -137,6 +127,7 @@ def index_detail(request, pk):
 
     elif request.method == 'PUT':
         data = json.loads(request.body)
+        event = Event.objects.get(id=pk)
 
         user = User.objects.get(pk=data['creator'])
         data['creator'] = user
@@ -157,18 +148,24 @@ def index_detail(request, pk):
             link_object, created = Link.objects.get_or_create(text=link)
             links_object.append(link_object)
 
-        event = Event(**data)
+        assign_from_dict(event, data)
         event.creator = user
         event.save()
-        return JsonResponse({'message': 'Event updated successfully'})
+
+        # Add the tags and links to the event
+        event.tags.set(tags_object)
+        event.links.set(links_object)
+
+        event_data = convert_to_json(event)
+        return JsonResponse(event_data, json_dumps_params={'indent': 4})
 
     elif request.method == 'DELETE':
         event.delete()
-        return JsonResponse({'message': 'Event deleted successfully'})
+        return JsonResponse({'message': f'Event {pk} deleted successfully'})
 
     else:
         return JsonResponse({'message': 'The request must be a GET, PUT or DELETE'}, status=400)
-    
+
 @csrf_exempt
 def index_participants(request, pk):
     try:
@@ -182,10 +179,11 @@ def index_participants(request, pk):
 
     elif request.method == 'POST':
         data = json.loads(request.body)
-        user = User.objects.get(pk=data['id_participant'])
+        user_id = data['id_participant']
+        user = User.objects.get(pk=user_id)
         event.participants.add(user)
         event.save()
-        return JsonResponse({'message': 'Participant added successfully'})
+        return JsonResponse({'message': f'Participant {user_id} added successfully to event {pk}'})
 
 @csrf_exempt
 def index_list_by_date(request, date):
