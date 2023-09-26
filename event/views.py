@@ -2,6 +2,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from .models import Event
 from user.models import User
+from tag.models import Tag
+from link.models import Link
 import json
 
 # JSON format, CRUD
@@ -42,12 +44,34 @@ def index_list(request):
     elif request.method == 'POST':
         data = json.loads(request.body)
 
+        # Get the user object from the id
         user = User.objects.get(pk=data['creator'])
         data['creator'] = user
+
+        # For each tag, get the object from the name, if it doesn't exist, create it
+        tags = data['tags']
+        del data['tags']
+        tags_object = []
+        for tag in tags:
+            tag_object, created = Tag.objects.get_or_create(name=tag)
+            tags_object.append(tag_object)
+        
+        # For each link, get the object from the text, if it doesn't exist, create it
+        links = data['links']
+        del data['links']
+        links_object = []
+        for link in links:
+            link_object, created = Link.objects.get_or_create(text=link)
+            links_object.append(link_object)
 
         event = Event(**data)
         event.creator = user
         event.save()
+
+        # Add the tags and links to the event
+        event.tags.set(tags_object)
+        event.links.set(links_object)
+
         return JsonResponse({'message': 'Event created successfully'})
 
     else:
@@ -108,15 +132,30 @@ def index_detail(request, pk):
             participants_complete.append(participant['id'])
 
         event_data['participants'] = participants_complete
-        
 
         return JsonResponse(event_data, safe=False, json_dumps_params={'indent': 4})
 
     elif request.method == 'PUT':
         data = json.loads(request.body)
 
-        user = User.objects.get(pk=int(data['creator']))
+        user = User.objects.get(pk=data['creator'])
         data['creator'] = user
+
+        # For each tag, get the object from the name, if it doesn't exist, create it
+        tags = data['tags']
+        del data['tags']
+        tags_object = []
+        for tag in tags:
+            tag_object, created = Tag.objects.get_or_create(name=tag)
+            tags_object.append(tag_object)
+        
+        # For each link, get the object from the text, if it doesn't exist, create it
+        links = data['links']
+        del data['links']
+        links_object = []
+        for link in links:
+            link_object, created = Link.objects.get_or_create(text=link)
+            links_object.append(link_object)
 
         event = Event(**data)
         event.creator = user
