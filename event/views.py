@@ -193,14 +193,7 @@ def index_list_by_date(request, date):
         events = Event.objects.filter(date__gte=date).order_by('date')
         event_data = list(events.values())
         
-        # Group by day, make an object with the date as key and the events as value
-        event_data_grouped = {}
-        for event in event_data:
-            if str(event['date']) in event_data_grouped:
-                event_data_grouped[str(event['date'])].append(event)
-            else:
-                event_data_grouped[str(event['date'])] = [event]
                 
-        return JsonResponse(event_data_grouped, safe=False, json_dumps_params={'indent': 4})
+        return JsonResponse(event_data, safe=False, json_dumps_params={'indent': 4})
     else:
         return JsonResponse({'message': 'The request must be a GET or POST'}, status=400)
