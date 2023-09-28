@@ -101,3 +101,28 @@ def index_events_one(request, user_id, event_id):
     
     else:
         return JsonResponse({'message': 'The request must be a POST or DELETE'}, status=400)
+
+
+@csrf_exempt
+def index_user_register(request):
+    
+    # Register of the user in the database
+    if request.method == "POST":
+        data = json.loads(request.body)
+
+        # Create dict with data of the user
+        user_data = {
+            'icon': "icon",
+            'login': data['login'],
+            'name': data['name'],
+            'password': data['password'],
+            'email': data['email'],
+            'career': data['career'],
+            'birthdate': data['birthdate']
+        }
+
+        # Create user
+        user = User(**user_data)
+        user.save()
+        user_data = convert_to_json(user)
+        return JsonResponse(user_data, json_dumps_params={'indent': 4}, status=201)
