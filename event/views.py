@@ -232,9 +232,10 @@ def index_list_by_date_and_user(request, date, user_id, future):
         
 
         if future:
-            events = Event.objects.filter(creator=user, date__gte=date).order_by('date')
+            #Check if the user is a participant of the event
+            events = Event.objects.filter(date__gte=date, participants__id=user_id).order_by('date')
         else:
-            events = Event.objects.filter(creator=user, date__lt=date).order_by('-date')
+            events = Event.objects.filter(date__lte=date, participants__id=user_id).order_by('-date')
         
         event_data = list(events.values())
 
