@@ -231,10 +231,10 @@ def index_list_by_date_and_user(request, date, user_id, future):
             return JsonResponse({'message': 'User not found'}, status=404)
         
 
-        if future:
+        if future == '1':
             #Check if the user is a participant of the event
             events = Event.objects.filter(date__gte=date, participants__id=user_id).order_by('date')
-        else:
+        elif future == '0':
             events = Event.objects.filter(date__lte=date, participants__id=user_id).order_by('-date')
         
         event_data = list(events.values())
