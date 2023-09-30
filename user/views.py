@@ -2,6 +2,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from .models import User
 from event.models import Event
+from weight.models import Weight
 import json
 from utils.utils import convert_to_json, assign_from_dict
 
@@ -90,8 +91,24 @@ def index_events_one(request, user_id, event_id):
         event = Event.objects.get(id=event_id)
         event.participants.add(user)
 
-        
+        user_weights = user.weights.all()
 
+        tags = event.tags.all()
+
+        for tag in tags:
+            # if the user has a weight for the tag, add 1 to the value
+            for weight in user_weights:
+                if weight.tag.id == tag.id:
+                    weight.value += 1
+                    weight.save()
+                    break
+            # if the user does not have a weight for the tag, create one
+            else:
+                weight = Weight(user=user, tag=tag, value=1)
+                weight.save()
+                user.weights.add(weight)
+                user.save()
+            
         event.save()
         return JsonResponse({'message': f'User {user_id} added as participant of event {event_id} successfully'})
     
