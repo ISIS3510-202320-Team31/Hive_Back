@@ -89,10 +89,12 @@ def index_detail(request, pk):
     if request.method == 'GET':
         # Transform event into JSON format 
         event_data = convert_to_json(event)
-
+        print(event_data)
         event_data['participants'] = list(event.participants.values())
         event_data['tags'] = list(event.tags.values())
         event_data['links'] = list(event.links.values())
+        event_data['creator_id'] = event_data['creator']['id']
+        event_data['creator'] = event_data['creator']['name']
 
         # Change tag object for only the name and link object for only the text
         tag_complete = []
@@ -122,6 +124,7 @@ def index_detail(request, pk):
             participants_complete.append(participant['id'])
 
         event_data['participants'] = participants_complete
+        
 
         return JsonResponse(event_data, safe=False, json_dumps_params={'indent': 4})
 
