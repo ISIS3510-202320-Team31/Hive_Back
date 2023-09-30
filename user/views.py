@@ -110,14 +110,31 @@ def index_events_one(request, user_id, event_id):
                 user.save()
             
         event.save()
-        return JsonResponse({'message': f'User {user_id} added as participant of event {event_id} successfully'})
+        new_event = convert_to_json(event)
+        new_event['participants'] = [participant['id'] for participant in list(event.participants.values())]
+        new_event['tags'] = [tag['name'] for tag in list(event.tags.values())]
+        new_event['links'] = [link['text'] for link in list(event.links.values())]
+        new_event['creator_id'] = new_event['creator']['id']
+        new_event['creator'] = new_event['creator']['name']
+
+        return JsonResponse(new_event,safe=False, json_dumps_params={'indent': 4})
+        # return JsonResponse({'message': f'User {user_id} added as participant of event {event_id} successfully'})
     
     elif request.method == 'DELETE':
         user = User.objects.get(id=user_id)
         event = Event.objects.get(id=event_id)
         event.participants.remove(user)
         event.save()
-        return JsonResponse({'message': f'User {user_id} removed as participant of event {event_id} successfully'})
+
+        new_event = convert_to_json(event)
+        new_event['participants'] = [participant['id'] for participant in list(event.participants.values())]
+        new_event['tags'] = [tag['name'] for tag in list(event.tags.values())]
+        new_event['links'] = [link['text'] for link in list(event.links.values())]
+        new_event['creator_id'] = new_event['creator']['id']
+        new_event['creator'] = new_event['creator']['name']
+
+        return JsonResponse(new_event,safe=False, json_dumps_params={'indent': 4})
+        # return JsonResponse({'message': f'User {user_id} removed as participant of event {event_id} successfully'})
     
     else:
         return JsonResponse({'message': 'The request must be a POST or DELETE'}, status=400)
