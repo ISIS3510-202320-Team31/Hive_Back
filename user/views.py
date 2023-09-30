@@ -157,3 +157,29 @@ def index_user_register(request):
         user_data.pop('password')
 
         return JsonResponse(user_data, json_dumps_params={'indent': 4}, status=201)
+
+@csrf_exempt
+def index_user_login(request):
+    # Login of the user in the database
+    if request.method == "POST":
+        data = json.loads(request.body)
+
+        # Create dict with data of the user
+        user_data = {
+            'login': data['login'],
+            'password': data['password']
+        }
+
+        # Check if any user has the same login
+        users = User.objects.all()
+
+        for user in users:
+            if user.login == user_data['login']:
+                if user.password == user_data['password']:
+                    user_data = convert_to_json(user)
+                    user_data.pop('password')
+                    return JsonResponse(user_data, json_dumps_params={'indent': 4}, status=201)
+                else:
+                    return JsonResponse({'message': 'Wrong password'}, status=400)
+
+        return JsonResponse({'message': 'Login does not exist'}, status=400)
