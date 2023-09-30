@@ -141,8 +141,19 @@ def index_user_register(request):
             'birthdate': data['birthdate']
         }
 
+        # Check if any user has the same login
+        users = User.objects.all()
+
+        for user in users:
+            if user.login == user_data['login']:
+                return JsonResponse({'message': 'Login already exists'}, status=400)
+
         # Create user
         user = User(**user_data)
         user.save()
         user_data = convert_to_json(user)
+
+        # Remove password from response
+        user_data.pop('password')
+
         return JsonResponse(user_data, json_dumps_params={'indent': 4}, status=201)
