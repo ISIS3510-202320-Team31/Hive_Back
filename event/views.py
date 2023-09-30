@@ -6,6 +6,8 @@ from tag.models import Tag
 from link.models import Link
 import json
 from utils.utils import convert_to_json, assign_from_dict
+from sortedcontainers import SortedList
+
 
 # JSON format, CRUD
 
@@ -83,15 +85,17 @@ def index_list(request):
 @csrf_exempt
 def events_for_user(request,user_id):
     if request.method == 'GET':
-        user_raw = User.objects.get(id=user_id)
-        user = convert_to_json(user_raw)
+        user = User.objects.get(id=user_id)
+        weights = user.weights.all()
         events = Event.objects.all()
         event_data = list(events.values())
-        print("user",user)
-        print("events",event_data)
+        sorted_events = SortedList( key=lambda x: -x['score'])
+        tag_weight = {}
+        events_for_user = []
+        for weight in weights:
+            tag_weight[weight.tag.name.lower()] = weight.value
         # Add the creator name to the event
         for event in event_data:
-            links_complete = []
             tags_complete = []
             participants_complete = []
             event['creator'] = User.objects.get(pk=event['creator_id']).name
@@ -101,20 +105,25 @@ def events_for_user(request,user_id):
             # The frontend will have to make a request to get the data of each participant, tag and link
             participants = list(indiv_event.participants.values())
             tags = list(indiv_event.tags.values())
-            links = list(indiv_event.links.values())
+            links = [link['text'] for link in indiv_event.links.values()]
+            score = 0
 
             for participant in participants:
                 participants_complete.append(participant['id'])
+                
             for tag in tags:
-                tags_complete.append(tag['name'])
-            for link in links:
-                links_complete.append(link['text'])
-            
+                tag_name = tag['name']
+                if tag_name in tag_weight:
+                    score += tag_weight[tag_name]
+                tags_complete.append(tag_name)
+                
             event['participants'] = participants_complete
             event['tags'] = tags_complete
-            event['links'] = links_complete
-
-        return JsonResponse(event_data, safe=False, json_dumps_params={'indent': 4})
+            event['links'] = links
+            sorted_events.add({'score':score,'event':event})
+        for event in sorted_events:
+            events_for_user.append(event['event'])
+        return JsonResponse(events_for_user, safe=False, json_dumps_params={'indent': 4})
 
 @csrf_exempt
 def index_detail(request, pk):

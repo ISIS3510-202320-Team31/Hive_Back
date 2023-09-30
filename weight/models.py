@@ -9,4 +9,4 @@ class Weight(models.Model):
     tag = models.ForeignKey('tag.Tag', on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.value
+        return f'{self.id}'

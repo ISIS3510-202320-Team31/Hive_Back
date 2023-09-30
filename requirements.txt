@@ -1,3 +1,4 @@
+sortedcontainers
 asgiref==3.6.0
 Django==4.2
 joblib==1.2.0
