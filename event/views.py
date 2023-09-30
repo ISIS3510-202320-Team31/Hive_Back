@@ -79,6 +79,43 @@ def index_list(request):
     else:
         return JsonResponse({'message': 'The request must be a GET or POST'}, status=400)
 
+
+@csrf_exempt
+def events_for_user(request,user_id):
+    if request.method == 'GET':
+        user_raw = User.objects.get(id=user_id)
+        user = convert_to_json(user_raw)
+        events = Event.objects.all()
+        event_data = list(events.values())
+        print("user",user)
+        print("events",event_data)
+        # Add the creator name to the event
+        for event in event_data:
+            links_complete = []
+            tags_complete = []
+            participants_complete = []
+            event['creator'] = User.objects.get(pk=event['creator_id']).name
+            indiv_event = Event.objects.get(pk=event['id'])
+            
+            # Add the participants, tags and links to the event, but only their ids
+            # The frontend will have to make a request to get the data of each participant, tag and link
+            participants = list(indiv_event.participants.values())
+            tags = list(indiv_event.tags.values())
+            links = list(indiv_event.links.values())
+
+            for participant in participants:
+                participants_complete.append(participant['id'])
+            for tag in tags:
+                tags_complete.append(tag['name'])
+            for link in links:
+                links_complete.append(link['text'])
+            
+            event['participants'] = participants_complete
+            event['tags'] = tags_complete
+            event['links'] = links_complete
+
+        return JsonResponse(event_data, safe=False, json_dumps_params={'indent': 4})
+
 @csrf_exempt
 def index_detail(request, pk):
     try:
@@ -89,7 +126,6 @@ def index_detail(request, pk):
     if request.method == 'GET':
         # Transform event into JSON format 
         event_data = convert_to_json(event)
-        print(event_data)
         event_data['participants'] = list(event.participants.values())
         event_data['tags'] = list(event.tags.values())
         event_data['links'] = list(event.links.values())
@@ -168,25 +204,6 @@ def index_detail(request, pk):
 
     else:
         return JsonResponse({'message': 'The request must be a GET, PUT or DELETE'}, status=400)
-
-@csrf_exempt
-def index_participants(request, pk):
-    try:
-        event = Event.objects.get(pk=pk)
-    except Event.DoesNotExist:
-        return JsonResponse({'message': 'The event does not exist'}, status=404)
-
-    if request.method == 'GET':
-        participants = list(event.participants.values())
-        return JsonResponse(participants, safe=False, json_dumps_params={'indent': 4})
-
-    elif request.method == 'POST':
-        data = json.loads(request.body)
-        user_id = data['id_participant']
-        user = User.objects.get(pk=user_id)
-        event.participants.add(user)
-        event.save()
-        return JsonResponse({'message': f'Participant {user_id} added successfully to event {pk}'})
 
 #Get all the events order by date
 @csrf_exempt

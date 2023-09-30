@@ -89,6 +89,9 @@ def index_events_one(request, user_id, event_id):
         user = User.objects.get(id=user_id)
         event = Event.objects.get(id=event_id)
         event.participants.add(user)
+
+        
+
         event.save()
         return JsonResponse({'message': f'User {user_id} added as participant of event {event_id} successfully'})
     

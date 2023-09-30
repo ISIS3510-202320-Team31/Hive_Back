@@ -1,6 +1,6 @@
 from django.db import models
 from enum import Enum
-from tag.models import Tag
+from weight.models import Weight
 import uuid
 
 class User(models.Model):
@@ -60,7 +60,8 @@ class User(models.Model):
     career = models.CharField(max_length=50,choices=Career.choices,default=Career.OTRO)
     birthdate = models.DateField()
     friends = models.ManyToManyField("self",blank=True)
-    tags = models.ManyToManyField(Tag,blank=True)
+    #tags = models.ManyToManyField(Tag,blank=True)
+    weights = models.ManyToManyField(Weight,blank=True)
 
     def __str__(self):
         return self.name
