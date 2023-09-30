@@ -14,7 +14,7 @@ class Event(models.Model):
         OTHER="OTHER"
 
     id = models.UUIDField( primary_key = True, default = uuid.uuid4, editable = False)
-    image = models.CharField(max_length=50)
+    image = models.CharField(max_length=1000)
     name = models.CharField(max_length=50)
     place = models.CharField(max_length=50)
     date = models.DateField()
