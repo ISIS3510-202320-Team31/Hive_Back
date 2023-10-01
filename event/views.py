@@ -263,8 +263,22 @@ def index_list_by_date_and_user(request, date, user_id, future):
         if future == '1':
             #Check if the user is a participant of the event
             events = Event.objects.filter(date__gte=date, participants__id=user_id).order_by('date')
+
+            
         elif future == '0':
-            events = Event.objects.filter(date__lte=date, participants__id=user_id).order_by('-date')
+            try:
+                input_date = datetime.strptime(date, '%Y-%m-%d')
+                date_before = input_date - timedelta(days=1)
+                str_date_before = date_before.strftime('%Y-%m-%d')
+
+                events = Event.objects.filter(date__lte=str_date_before, participants__id=user_id).order_by('-date')
+
+            except ValueError:
+                return JsonResponse({'message': 'The date must be in the format YYYY-MM-DD'}, status=400)
+
+            
+
+           
         
         event_data = list(events.values())
 
