@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from .models import Event
@@ -98,6 +99,8 @@ def events_for_user(request,user_id):
             tag_weight[weight.tag.name.lower()] = weight.value
         # Add the creator name to the event
         for event in event_data:
+            if event['date']<datetime.now().date():
+                continue
             tags_complete = []
             participants_complete = []
             event['creator'] = User.objects.get(pk=event['creator_id']).name
@@ -265,8 +268,22 @@ def index_list_by_date_and_user(request, date, user_id, future):
         if future == '1':
             #Check if the user is a participant of the event
             events = Event.objects.filter(date__gte=date, participants__id=user_id).order_by('date')
+
+            
         elif future == '0':
-            events = Event.objects.filter(date__lte=date, participants__id=user_id).order_by('-date')
+            try:
+                input_date = datetime.strptime(date, '%Y-%m-%d')
+                date_before = input_date - timedelta(days=1)
+                str_date_before = date_before.strftime('%Y-%m-%d')
+
+                events = Event.objects.filter(date__lte=str_date_before, participants__id=user_id).order_by('-date')
+
+            except ValueError:
+                return JsonResponse({'message': 'The date must be in the format YYYY-MM-DD'}, status=400)
+
+            
+
+           
         
         event_data = list(events.values())
 

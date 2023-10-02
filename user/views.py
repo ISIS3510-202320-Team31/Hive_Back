@@ -109,14 +109,31 @@ def index_events_one(request, user_id, event_id):
                 user.save()
             
         event.save()
-        return JsonResponse({'message': f'User {user_id} added as participant of event {event_id} successfully'})
+        new_event = convert_to_json(event)
+        new_event['participants'] = [participant['id'] for participant in list(event.participants.values())]
+        new_event['tags'] = [tag['name'] for tag in list(event.tags.values())]
+        new_event['links'] = [link['text'] for link in list(event.links.values())]
+        new_event['creator_id'] = new_event['creator']['id']
+        new_event['creator'] = new_event['creator']['name']
+
+        return JsonResponse(new_event,safe=False, json_dumps_params={'indent': 4})
+        # return JsonResponse({'message': f'User {user_id} added as participant of event {event_id} successfully'})
     
     elif request.method == 'DELETE':
         user = User.objects.get(id=user_id)
         event = Event.objects.get(id=event_id)
         event.participants.remove(user)
         event.save()
-        return JsonResponse({'message': f'User {user_id} removed as participant of event {event_id} successfully'})
+
+        new_event = convert_to_json(event)
+        new_event['participants'] = [participant['id'] for participant in list(event.participants.values())]
+        new_event['tags'] = [tag['name'] for tag in list(event.tags.values())]
+        new_event['links'] = [link['text'] for link in list(event.links.values())]
+        new_event['creator_id'] = new_event['creator']['id']
+        new_event['creator'] = new_event['creator']['name']
+
+        return JsonResponse(new_event,safe=False, json_dumps_params={'indent': 4})
+        # return JsonResponse({'message': f'User {user_id} removed as participant of event {event_id} successfully'})
     
     else:
         return JsonResponse({'message': 'The request must be a POST or DELETE'}, status=400)
@@ -140,8 +157,45 @@ def index_user_register(request):
             'birthdate': data['birthdate']
         }
 
+        # Check if any user has the same login
+        users = User.objects.all()
+
+        for user in users:
+            if user.login == user_data['login']:
+                return JsonResponse({'message': 'Login already exists'}, status=400)
+
         # Create user
         user = User(**user_data)
         user.save()
         user_data = convert_to_json(user)
+
+        # Remove password from response
+        user_data.pop('password')
+
         return JsonResponse(user_data, json_dumps_params={'indent': 4}, status=201)
+
+@csrf_exempt
+def index_user_login(request):
+    # Login of the user in the database
+    if request.method == "POST":
+        data = json.loads(request.body)
+
+        # Create dict with data of the user
+        user_data = {
+            'login': data['login'],
+            'password': data['password']
+        }
+
+        # Check if any user has the same login
+        users = User.objects.all()
+
+        for user in users:
+            if user.login == user_data['login']:
+                if user.password == user_data['password']:
+                    user_data = convert_to_json(user)
+                    user_data.pop('password')
+                    return JsonResponse(user_data, json_dumps_params={'indent': 4}, status=201)
+                else:
+                    return JsonResponse({'message': 'Wrong password'}, status=400)
+
+        return JsonResponse({'message': 'Login does not exist'}, status=400)
