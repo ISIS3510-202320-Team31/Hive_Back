@@ -39,7 +39,6 @@ def index_list(request):
         user.save()
         user_data = convert_to_json(user)
         return JsonResponse(user_data, json_dumps_params={'indent': 4}, status=201)
-        
     
     else:
         return JsonResponse({'message': 'The request must be a GET or POST'}, status=400)

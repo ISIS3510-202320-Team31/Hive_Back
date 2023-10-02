@@ -76,6 +76,8 @@ def index_list(request):
         event.links.set(links_object)
 
         event_data = convert_to_json(event)
+        event_data['creator'] = event_data['creator']['id']
+
         return JsonResponse(event_data, json_dumps_params={'indent': 4}, status=201)
 
     else:
