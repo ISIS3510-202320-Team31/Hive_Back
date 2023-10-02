@@ -97,6 +97,8 @@ def events_for_user(request,user_id):
             tag_weight[weight.tag.name.lower()] = weight.value
         # Add the creator name to the event
         for event in event_data:
+            if event['date']<datetime.now().date():
+                continue
             tags_complete = []
             participants_complete = []
             event['creator'] = User.objects.get(pk=event['creator_id']).name
