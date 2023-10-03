@@ -100,7 +100,7 @@ def events_for_user(request,user_id):
             tag_weight[weight.tag.name.lower()] = weight.value
         # Add the creator name to the event
         bog_zone = pytz.timezone('America/Bogota')
-        bog_time = datetime.now(bog_zone)
+        bog_time = datetime.now(bog_zone).date()
         for event in event_data:
             if event['date']<bog_time:
                 continue
