@@ -316,7 +316,7 @@ def index_list_by_date_and_user(request, date, user_id, future):
 
 #Get the number of events for a user
 @csrf_exempt
-def index_list_by_user_size(request, user_id):
+def index_count_events_by_user(request, user_id):
     if request.method == 'GET':
         try:
             user = User.objects.get(pk=user_id)
