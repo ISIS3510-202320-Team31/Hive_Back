@@ -6,6 +6,7 @@ from user.models import User
 from tag.models import Tag
 from link.models import Link
 import json
+import pytz
 from utils.utils import convert_to_json, assign_from_dict
 from sortedcontainers import SortedList
 
@@ -98,8 +99,10 @@ def events_for_user(request,user_id):
         for weight in weights:
             tag_weight[weight.tag.name.lower()] = weight.value
         # Add the creator name to the event
+        bog_zone = pytz.timezone('America/Bogota')
+        bog_time = datetime.now(bog_zone)
         for event in event_data:
-            if event['date']<datetime.now().date():
+            if event['date']<bog_time:
                 continue
             tags_complete = []
             participants_complete = []
