@@ -6,6 +6,7 @@ from user.models import User
 from tag.models import Tag
 from link.models import Link
 import json
+import pytz
 from utils.utils import convert_to_json, assign_from_dict
 from sortedcontainers import SortedList
 from django.core.paginator import Paginator
@@ -106,8 +107,10 @@ def events_for_user(request,user_id):
         for weight in weights:
             tag_weight[weight.tag.name.lower()] = weight.value
         # Add the creator name to the event
+        bog_zone = pytz.timezone('America/Bogota')
+        bog_time = datetime.now(bog_zone).date()
         for event in event_data:
-            if event['date']<datetime.now().date():
+            if event['date']<bog_time:
                 continue
             tags_complete = []
             participants_complete = []
@@ -327,6 +330,21 @@ def index_list_by_date_and_user(request, date, user_id, future):
             event['links'] = links_complete
 
         return JsonResponse(event_data, safe=False, json_dumps_params={'indent': 4})
+        
+    else:
+        return JsonResponse({'message': 'The request must be a GET or POST'}, status=400)
+
+#Get the number of events for a user
+@csrf_exempt
+def index_count_events_by_user(request, user_id):
+    if request.method == 'GET':
+        try:
+            user = User.objects.get(pk=user_id)
+        except User.DoesNotExist:
+            return JsonResponse({'message': 'User not found'}, status=404)
+        
+        events = Event.objects.filter(participants__id=user_id).count()
+        return JsonResponse({'size': events}, safe=False, json_dumps_params={'indent': 4})
         
     else:
         return JsonResponse({'message': 'The request must be a GET or POST'}, status=400)
