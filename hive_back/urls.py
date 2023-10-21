@@ -15,12 +15,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from event.views import index_list as event_index_list, index_detail as event_index_detail, index_list_by_date as event_index_list_by_date, index_list_by_date_and_user as event_index_list_by_date_and_user,events_for_user as events_for_user
+from event.views import default, index_list as event_index_list, index_detail as event_index_detail, index_list_by_date as event_index_list_by_date, index_list_by_date_and_user as event_index_list_by_date_and_user,events_for_user as events_for_user
 from user.views import index_list as user_index_list, index_one as user_index_one, index_user_register as user_index_register, index_user_login as user_index_login
 from weight.views import index_list as weight_index_list, index_detail as weight_index_detail, index_user as weight_index_user, index_tag as weight_index_tag
 from user.views import index_list as user_index_list, index_one as user_index_one, index_events_list as user_index_events_list, index_events_one as user_index_events_one
 
 urlpatterns = [
+    path('', default, name='default'),
     path('admin/', admin.site.urls),
     path('events/', event_index_list, name='event_list'),
     path('events/<str:pk>/', event_index_detail, name='event_detail'),

@@ -8,7 +8,11 @@ from link.models import Link
 import json
 from utils.utils import convert_to_json, assign_from_dict
 from sortedcontainers import SortedList
+from django.core.paginator import Paginator
 
+@csrf_exempt
+def default(request):
+    return JsonResponse({'message': 'API Hive'}, json_dumps_params={'indent': 4})
 
 # JSON format, CRUD
 
@@ -84,14 +88,18 @@ def index_list(request):
     else:
         return JsonResponse({'message': 'The request must be a GET or POST'}, status=400)
 
-
+# Smart Feature (Feed)
 @csrf_exempt
 def events_for_user(request,user_id):
     if request.method == 'GET':
+        # user logged in
         user = User.objects.get(id=user_id)
         weights = user.weights.all()
+        
+        # all the events
         events = Event.objects.all()
         event_data = list(events.values())
+        
         sorted_events = SortedList( key=lambda x: -x['score'])
         tag_weight = {}
         events_for_user = []
@@ -128,7 +136,22 @@ def events_for_user(request,user_id):
             sorted_events.add({'score':score,'event':event})
         for event in sorted_events:
             events_for_user.append(event['event'])
-        return JsonResponse(events_for_user, safe=False, json_dumps_params={'indent': 4})
+
+        per_page = int(request.GET.get('per_page', len(events_for_user)))
+        page = int(request.GET.get('page', 1))
+        paginator = Paginator(events_for_user, per_page)
+        final_events = paginator.page(page)
+
+        """ TODO: Cambiar la respuesta para que sea
+        response_data = {
+            'total_count': len(events_for_user),
+            'page_count': paginator.num_pages,
+            'current_page': page,
+            'data': list(final_events)
+        }
+        """
+        
+        return JsonResponse(list(final_events), safe=False, json_dumps_params={'indent': 4})
 
 @csrf_exempt
 def index_detail(request, pk):
@@ -263,12 +286,10 @@ def index_list_by_date_and_user(request, date, user_id, future):
             user = User.objects.get(pk=user_id)
         except User.DoesNotExist:
             return JsonResponse({'message': 'User not found'}, status=404)
-        
 
         if future == '1':
             #Check if the user is a participant of the event
             events = Event.objects.filter(date__gte=date, participants__id=user_id).order_by('date')
-
             
         elif future == '0':
             try:
@@ -281,10 +302,6 @@ def index_list_by_date_and_user(request, date, user_id, future):
             except ValueError:
                 return JsonResponse({'message': 'The date must be in the format YYYY-MM-DD'}, status=400)
 
-            
-
-           
-        
         event_data = list(events.values())
 
         for event in event_data:
