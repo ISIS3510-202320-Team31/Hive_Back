@@ -87,7 +87,7 @@ def index_list(request):
         return JsonResponse(event_data, json_dumps_params={'indent': 4}, status=201)
 
     else:
-        return JsonResponse({'message': 'The request must be a GET or POST'}, status=400)
+        return JsonResponse({'message': 'La solicitud debe ser GET o POST'}, status=400)
 
 # Smart Feature (Feed)
 @csrf_exempt
@@ -161,7 +161,7 @@ def index_detail(request, pk):
     try:
         event = Event.objects.get(pk=pk)
     except Event.DoesNotExist:
-        return JsonResponse({'message': 'The event does not exist'}, status=404)
+        return JsonResponse({'message': 'El evento no existe'}, status=404)
 
     if request.method == 'GET':
         # Transform event into JSON format 
@@ -243,7 +243,7 @@ def index_detail(request, pk):
         return JsonResponse({'message': f'Event {pk} deleted successfully'})
 
     else:
-        return JsonResponse({'message': 'The request must be a GET, PUT or DELETE'}, status=400)
+        return JsonResponse({'message': 'La petición debe ser GET, PUT o DELETE'}, status=400)
 
 #Get all the events order by date
 @csrf_exempt
@@ -280,7 +280,7 @@ def index_list_by_date(request, date):
         return JsonResponse(event_data, safe=False, json_dumps_params={'indent': 4})
         
     else:
-        return JsonResponse({'message': 'The request must be a GET or POST'}, status=400)
+        return JsonResponse({'message': 'La petición debe ser GET o POST'}, status=400)
 
 @csrf_exempt
 def index_list_by_date_and_user(request, date, user_id, future):
@@ -288,7 +288,7 @@ def index_list_by_date_and_user(request, date, user_id, future):
         try:
             user = User.objects.get(pk=user_id)
         except User.DoesNotExist:
-            return JsonResponse({'message': 'User not found'}, status=404)
+            return JsonResponse({'message': 'Usuario no encontrado'}, status=404)
 
         if future == '1':
             #Check if the user is a participant of the event
@@ -303,7 +303,7 @@ def index_list_by_date_and_user(request, date, user_id, future):
                 events = Event.objects.filter(date__lte=str_date_before, participants__id=user_id).order_by('-date')
 
             except ValueError:
-                return JsonResponse({'message': 'The date must be in the format YYYY-MM-DD'}, status=400)
+                return JsonResponse({'message': 'La fecha debe estar en el formato YYYY-MM-DD'}, status=400)
 
         event_data = list(events.values())
 
@@ -332,7 +332,7 @@ def index_list_by_date_and_user(request, date, user_id, future):
         return JsonResponse(event_data, safe=False, json_dumps_params={'indent': 4})
         
     else:
-        return JsonResponse({'message': 'The request must be a GET or POST'}, status=400)
+        return JsonResponse({'message': 'La petición debe ser GET o POST'}, status=400)
 
 #Get the number of events for a user
 @csrf_exempt
@@ -347,4 +347,4 @@ def index_count_events_by_user(request, user_id):
         return JsonResponse({'size': events}, safe=False, json_dumps_params={'indent': 4})
         
     else:
-        return JsonResponse({'message': 'The request must be a GET or POST'}, status=400)
+        return JsonResponse({'message': 'La petición debe ser GET o POST'}, status=400)

@@ -41,7 +41,7 @@ def index_list(request):
         return JsonResponse(user_data, json_dumps_params={'indent': 4}, status=201)
     
     else:
-        return JsonResponse({'message': 'The request must be a GET or POST'}, status=400)
+        return JsonResponse({'message': 'La solicitud debe ser un GET o POST'}, status=400)
 
 @csrf_exempt
 def index_one(request, user_id):
@@ -61,10 +61,10 @@ def index_one(request, user_id):
     elif request.method == 'DELETE':
         user = User.objects.get(id=user_id)
         user.delete()
-        return JsonResponse({'message': f'User {user_id} deleted successfully'})
+        return JsonResponse({'message': f'Usuario {user_id} eliminado correctamente'})
     
     else:
-        return JsonResponse({'message': 'The request must be a GET, PUT or DELETE'}, status=400)
+        return JsonResponse({'message': 'La solicitud debe ser un GET, PUT o DELETE'}, status=400)
 
 @csrf_exempt
 def index_events_list(request, user_id):
@@ -81,7 +81,7 @@ def index_events_list(request, user_id):
         return JsonResponse(events_data, safe=False, json_dumps_params={'indent': 4})
     
     else:
-        return JsonResponse({'message': 'The request must be a GET'}, status=400)
+        return JsonResponse({'message': 'La solicitud debe ser un GET'}, status=400)
 
 @csrf_exempt
 def index_events_one(request, user_id, event_id):
@@ -136,7 +136,7 @@ def index_events_one(request, user_id, event_id):
         # return JsonResponse({'message': f'User {user_id} removed as participant of event {event_id} successfully'})
     
     else:
-        return JsonResponse({'message': 'The request must be a POST or DELETE'}, status=400)
+        return JsonResponse({'message': 'La solicitud debe ser un POST o DELETE'}, status=400)
 
 
 @csrf_exempt
@@ -162,7 +162,7 @@ def index_user_register(request):
 
         for user in users:
             if user.login == user_data['login']:
-                return JsonResponse({'message': 'Login already exists'}, status=400)
+                return JsonResponse({'message': 'El login ya existe'}, status=400)
 
         # Create user
         user = User(**user_data)
@@ -196,6 +196,6 @@ def index_user_login(request):
                     user_data.pop('password')
                     return JsonResponse(user_data, json_dumps_params={'indent': 4}, status=201)
                 else:
-                    return JsonResponse({'message': 'Wrong password'}, status=400)
+                    return JsonResponse({'message': 'Contraseña incorrecta'}, status=400)
 
-        return JsonResponse({'message': 'Login does not exist'}, status=400)
+        return JsonResponse({'message': 'El login no existe'}, status=400)

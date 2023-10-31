@@ -22,7 +22,7 @@ def index_detail(request, id):
     try:
         weight = Weight.objects.get(id=id)
     except Weight.DoesNotExist:
-        return JsonResponse({'error': 'Weight not found'}, status=404)
+        return JsonResponse({'error': 'Peso con id ' + id + ' no encontrado'}, status=404)
 
     if request.method == 'GET':
         weight_data = {
@@ -39,11 +39,11 @@ def index_detail(request, id):
         weight.user_id = body['user_id']
         weight.tag_id = body['tag_id']
         weight.save()
-        return JsonResponse({'message': 'Weight updated successfully!'}, status=200)
+        return JsonResponse({'message': 'Peso actualizado correctamente!'}, status=200)
 
     if request.method == 'DELETE':
         weight.delete()
-        return JsonResponse({'message': 'Weight deleted successfully!'}, status=200)
+        return JsonResponse({'message': 'Peso eliminado correctamente!'}, status=200)
 
 @csrf_exempt
 def index_user(request, user_id):
