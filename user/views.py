@@ -82,6 +82,23 @@ def index_events_list(request, user_id):
     
     else:
         return JsonResponse({'message': 'La solicitud debe ser un GET'}, status=400)
+    
+@csrf_exempt
+def index_events_list_created(request, user_id):
+    if request.method == 'GET':
+        user = User.objects.get(id=user_id)
+        events = Event.objects.all()
+        events_data = []
+
+        for event in events:
+            # all events where user is creator or participant
+            if event.creator.id == user.id:
+                events_data.append(event.id)
+        
+        return JsonResponse(events_data, safe=False, json_dumps_params={'indent': 4})
+    
+    else:
+        return JsonResponse({'message': 'La solicitud debe ser un GET'}, status=400)
 
 @csrf_exempt
 def index_events_one(request, user_id, event_id):
