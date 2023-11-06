@@ -86,16 +86,37 @@ def index_events_list(request, user_id):
 @csrf_exempt
 def index_events_list_created(request, user_id):
     if request.method == 'GET':
-        user = User.objects.get(id=user_id)
         events = Event.objects.all()
-        events_data = []
+        events_data = list(events.values())
+        events_filtered = []
 
-        for event in events:
-            # all events where user is creator or participant
-            if event.creator.id == user.id:
-                events_data.append(event.id)
+        for event in events_data:
+            if event['creator_id'] == user_id:
+                links_complete = []
+                tags_complete = []
+                participants_complete = []
+                indiv_event = Event.objects.get(pk=event['id'])
+
+                # Add the participants, tags and links to the event, but only their ids
+                # The frontend will have to make a request to get the data of each participant, tag and link
+                participants = list(indiv_event.participants.values())
+                tags = list(indiv_event.tags.values())
+                links = list(indiv_event.links.values())
+
+                for participant in participants:
+                    participants_complete.append(participant['id'])
+                for tag in tags:
+                    tags_complete.append(tag['name'])
+                for link in links:
+                    links_complete.append(link['text'])
+                
+                event['participants'] = participants_complete
+                event['tags'] = tags_complete
+                event['links'] = links_complete
+                event['creator'] = User.objects.get(pk=event['creator_id']).name
+                events_filtered.append(event)
         
-        return JsonResponse(events_data, safe=False, json_dumps_params={'indent': 4})
+        return JsonResponse(events_filtered, safe=False, json_dumps_params={'indent': 4})
     
     else:
         return JsonResponse({'message': 'La solicitud debe ser un GET'}, status=400)
