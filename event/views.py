@@ -367,3 +367,13 @@ def index_count_events_by_user(request, user_id):
         
     else:
         return JsonResponse({'message': 'La petición debe ser GET o POST'}, status=400)
+    
+@csrf_exempt
+def index_list_edit_event(request, pk):
+    if request.method == 'PUT':
+        data = json.loads(request.body)
+        event = User.objects.get(id=pk)
+        assign_from_dict(event, data)
+        event.save()
+        event_data = convert_to_json(event)
+        return JsonResponse(event_data, json_dumps_params={'indent': 4})
