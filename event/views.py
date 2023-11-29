@@ -59,10 +59,13 @@ def index_list(request):
 
         # For each tag, get the object from the name, if it doesn't exist, create it
         tags = data['tags']
+        tags.append(data['category'])
         del data['tags']
         tags_object = []
         for tag in tags:
-            tag_object, created = Tag.objects.get_or_create(name=tag)
+            if tag == '' or tag is None:
+                continue
+            tag_object, created = Tag.objects.get_or_create(name=tag.lower())
             tags_object.append(tag_object)
         
         # For each link, get the object from the text, if it doesn't exist, create it
@@ -70,11 +73,16 @@ def index_list(request):
         del data['links']
         links_object = []
         for link in links:
+            if link == '' or link is None:
+                continue
             link_object, created = Link.objects.get_or_create(text=link)
             links_object.append(link_object)
 
         event = Event(**data)
         event.creator = user
+        event.save()
+
+        event.participants.add(user)
         event.save()
 
         # Add the tags and links to the event

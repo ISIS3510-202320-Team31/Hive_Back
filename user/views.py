@@ -201,6 +201,8 @@ def index_user_register(request):
         for user in users:
             if user.login == user_data['login']:
                 return JsonResponse({'message': 'El login ya existe'}, status=400)
+            if user.email == user_data['email']:
+                return JsonResponse({'message': 'El email ya existe'}, status=400)
 
         # Create user
         user = User(**user_data)
