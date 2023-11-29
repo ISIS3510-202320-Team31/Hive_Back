@@ -313,7 +313,7 @@ def index_top_partners(request, user_id):
 
         #Get events of the user_id had attended
         for event in events_data:
-            if user_id in event.participants.all():
+            if user_id in event['participants']:
                 user_events.append(event)
         
         #Get participants of the events
