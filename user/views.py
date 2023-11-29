@@ -277,14 +277,19 @@ def index_top_creators(request):
             for event in user['events_created']:
                 suma += len(Event.objects.get(id=event).participants.all())
 
-            user['sum'] = suma
+            if len(user['events_created']) > 3:
+                suma = suma / len(user['events_created'])
+            else:
+                suma = 0
+
+            user['average'] = suma
 
             user.pop('events_created')
 
         
 
         # Sort the users by the average of attendees of their events
-        users_data.sort(key=lambda x: x['sum'], reverse=True)
+        users_data.sort(key=lambda x: x['average'], reverse=True)
 
         # Get the top 5 users
         top_users = users_data[:5]
