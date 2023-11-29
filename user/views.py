@@ -237,3 +237,60 @@ def index_user_login(request):
                     return JsonResponse({'message': 'Contraseña incorrecta'}, status=400)
 
         return JsonResponse({'message': 'El login no existe'}, status=400)
+
+@csrf_exempt
+def index_top_creators(request):
+    if request.method == 'GET':
+        # Get the top 5 creators of events (Their name and the average of attendees of their events)
+        users = User.objects.all()
+        events = Event.objects.all()
+        users_data = list(users.values())
+
+        # Get the events created by the user
+        for user in users_data:
+            events_created = []
+            user['events_created'] = []
+
+            # Add in events created the IDs of the events created by the user
+            for event in events:
+                if event.creator.id == user['id']:
+                    events_created.append(event.id)
+            
+            user['events_created'] = events_created
+
+        # Remove all info except the name and the events created
+        for user in users_data:
+            user.pop('id')
+            user.pop('icon')
+            user.pop('login')
+            user.pop('password')
+            user.pop('email')
+            user.pop('verificated')
+            user.pop('role')
+            user.pop('career')
+            user.pop('birthdate')
+
+
+        # Get the average of attendees of the events created by the user
+        for user in users_data:
+            suma = 0
+            for event in user['events_created']:
+                suma += len(Event.objects.get(id=event).participants.all())
+
+            user['sum'] = suma
+
+            user.pop('events_created')
+
+        
+
+        # Sort the users by the average of attendees of their events
+        users_data.sort(key=lambda x: x['sum'], reverse=True)
+
+        # Get the top 5 users
+        top_users = users_data[:5]
+
+        return JsonResponse(top_users, safe=False, json_dumps_params={'indent': 4})
+
+    
+    else:
+        return JsonResponse({'message': 'La solicitud debe ser un GET'}, status=400)

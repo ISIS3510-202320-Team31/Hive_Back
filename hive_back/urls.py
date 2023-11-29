@@ -18,7 +18,7 @@ from django.urls import path
 from event.views import default, index_list as event_index_list, index_detail as event_index_detail, index_list_by_date as event_index_list_by_date, index_list_by_date_and_user as event_index_list_by_date_and_user,events_for_user as events_for_user, index_count_events_by_user as event_index_count_events_by_user
 from user.views import index_list as user_index_list, index_one as user_index_one, index_user_register as user_index_register, index_user_login as user_index_login
 from weight.views import index_list as weight_index_list, index_detail as weight_index_detail, index_user as weight_index_user, index_tag as weight_index_tag
-from user.views import index_list as user_index_list, index_one as user_index_one, index_events_list as user_index_events_list, index_events_one as user_index_events_one, index_events_list_created as user_index_events_list_created
+from user.views import index_list as user_index_list, index_one as user_index_one, index_events_list as user_index_events_list, index_events_one as user_index_events_one, index_events_list_created as user_index_events_list_created, index_top_creators as user_index_top_creators
 
 urlpatterns = [
     path('', default, name='default'),
@@ -40,4 +40,5 @@ urlpatterns = [
     path('users/<uuid:user_id>/events/<uuid:event_id>/', user_index_events_one, name='event_by_user_detail'),
     path('register/', user_index_register, name='user_register'),
     path('login/', user_index_login, name='user_login'),
+    path('top_creators/', user_index_top_creators, name='top_creators'),
 ]
