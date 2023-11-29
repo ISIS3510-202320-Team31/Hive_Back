@@ -10,10 +10,21 @@ import pytz
 from utils.utils import convert_to_json, assign_from_dict
 from sortedcontainers import SortedList
 from django.core.paginator import Paginator
+import unicodedata
 
 @csrf_exempt
 def default(request):
     return JsonResponse({'message': 'API Hive'}, json_dumps_params={'indent': 4})
+
+def remover_acentos_y_minusculas(palabra):
+    """
+    Función para remover los acentos de una palabra y convertirla a minúsculas.
+    """
+    palabra_sin_acentos = ''.join(
+        c for c in unicodedata.normalize('NFD', palabra)
+        if unicodedata.category(c) != 'Mn'
+    )
+    return palabra_sin_acentos.lower()
 
 # JSON format, CRUD
 
@@ -65,7 +76,7 @@ def index_list(request):
         for tag in tags:
             if tag == '' or tag is None:
                 continue
-            tag_object, created = Tag.objects.get_or_create(name=tag.lower())
+            tag_object, created = Tag.objects.get_or_create(name=remover_acentos_y_minusculas(tag))
             tags_object.append(tag_object)
         
         # For each link, get the object from the text, if it doesn't exist, create it
