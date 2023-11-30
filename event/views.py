@@ -411,7 +411,28 @@ def index_list_edit_event(request, pk):
     if request.method == 'PUT':
         data = json.loads(request.body)
         event = Event.objects.get(id=pk)
+        user = User.objects.get(pk=data['creator'])
+        data['creator'] = user
+
+        # For each tag, get the object from the name, if it doesn't exist, create it
+        tags = data['tags']
+        del data['tags']
+        tags_object = []
+        for tag in tags:
+            tag_object, created = Tag.objects.get_or_create(name=tag)
+            tags_object.append(tag_object)
+
+        # For each link, get the object from the text, if it doesn't exist, create it
+        links = data['links']
+        del data['links']
+        links_object = []
+        for link in links:
+            link_object, created = Link.objects.get_or_create(text=link)
+            links_object.append(link_object)
+
         assign_from_dict(event, data)
+        event.creator = user
+
         event.save()
         event_data = convert_to_json(event)
         return JsonResponse(event_data, json_dumps_params={'indent': 4})
