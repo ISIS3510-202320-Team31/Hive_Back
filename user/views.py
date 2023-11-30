@@ -320,10 +320,10 @@ def index_top_partners(request, user_id):
         for event in user_events:
             participants = event.participants.exclude(id=user_id)
             for participant in participants:
-                if participant['id'] in top_partners:
-                    top_partners[participant['id']] += 1
+                if participant.id in top_partners:
+                    top_partners[participant.id] += 1
                 else:
-                    top_partners[participant['id']] = 1
+                    top_partners[participant.id] = 1
 
         #Sort the partners by the number of events that the user and the partner had attended
         top_partners = sorted(top_partners.items(), key=lambda x: x[1], reverse=True)
