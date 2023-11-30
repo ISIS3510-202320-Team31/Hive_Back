@@ -384,7 +384,7 @@ def index_list_stats(request, user_id):
         total_events = len(event_data)
         for category in stats_dict:
             
-            stats.append({"category":category,"value":stats_dict[category]*100/total_events, "color":color_category[category]})
+            stats.append({"category":category,"value":round(stats_dict[category]*100/total_events,1), "color":color_category[category]})
 
         return JsonResponse(stats, safe=False, json_dumps_params={'indent': 4})
         
