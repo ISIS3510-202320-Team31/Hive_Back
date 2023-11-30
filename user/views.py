@@ -1,5 +1,6 @@
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
 from .models import User
 from event.models import Event
 from weight.models import Weight
@@ -312,34 +313,28 @@ def index_top_creators(request):
 def index_top_partners(request, user_id):
     if request.method == 'GET':
         #Get events of the user
-        events = Event.objects.all()
-        events_data = list(events.values())
-        user_events = []
-
-        #Get events of the user_id had attended
-        for event in events_data:
-            if user_id in event['participants']:
-                user_events.append(event)
+        user_events = Event.objects.filter(participants=user_id)
         
         #Get participants of the events
         top_partners = {}
         for event in user_events:
-            participants = list(event.participants.values())
+            participants = event.participants.exclude(id=user_id)
             for participant in participants:
-                if participant['id'] != user_id:
-                    if participant['id'] in top_partners:
-                        top_partners[participant['id']] += 1
-                    else:
-                        top_partners[participant['id']] = 1
+                if participant['id'] in top_partners:
+                    top_partners[participant['id']] += 1
+                else:
+                    top_partners[participant['id']] = 1
 
         #Sort the partners by the number of events that the user and the partner had attended
         top_partners = sorted(top_partners.items(), key=lambda x: x[1], reverse=True)
 
         #Get the name of the top five partners in a list
         top_partners_names = []
-        i=0
-        while i < 5 and i < len(top_partners):
-            top_partners_names.append(User.objects.get(id=top_partners[i][0]).name)
+        i = 0
+        while i < len(top_partners) and i < 5:
+            partner_id = top_partners[i][0]
+            partner_name = get_object_or_404(User, id=partner_id).name
+            top_partners_names.append(partner_name)
             i += 1
         
         return JsonResponse(top_partners_names, safe=False, json_dumps_params={'indent': 4})
