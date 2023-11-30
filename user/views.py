@@ -132,6 +132,8 @@ def index_events_one(request, user_id, event_id):
 
         tags = event.tags.all()
 
+        print(f"Adding user {user_id} to event {event_id}")
+
         for tag in tags:
             # if the user has a weight for the tag, add 1 to the value
             for weight in user_weights:
@@ -153,6 +155,9 @@ def index_events_one(request, user_id, event_id):
         new_event['links'] = [link['text'] for link in list(event.links.values())]
         new_event['creator_id'] = new_event['creator']['id']
         new_event['creator'] = new_event['creator']['name']
+
+        print("Evento actualizado:")
+        print(new_event)
 
         return JsonResponse(new_event,safe=False, json_dumps_params={'indent': 4})
         # return JsonResponse({'message': f'User {user_id} added as participant of event {event_id} successfully'})
