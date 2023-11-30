@@ -14,11 +14,11 @@ import unicodedata
 import random
 
 color_category = {
-    "ACADEMIC":"#68da3e", 
+    "ACADEMICO":"#68da3e", 
     "CULTURAL":"#00c6ab", 
-    "SPORTS":"#6aa3b4", 
-    "ENTERTAINMENT":"#416864", 
-    "OTHER":"#d6ebc1"
+    "DEPORTES":"#6aa3b4", 
+    "ENTRETENIMIENTO":"#416864", 
+    "OTROS":"#d6ebc1"
 }
 
 @csrf_exempt
