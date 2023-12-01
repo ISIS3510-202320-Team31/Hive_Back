@@ -11,6 +11,15 @@ from utils.utils import convert_to_json, assign_from_dict
 from sortedcontainers import SortedList
 from django.core.paginator import Paginator
 import unicodedata
+import random
+
+color_category = {
+    "ACADEMIC":"#68da3e", 
+    "CULTURAL":"#00c6ab", 
+    "SPORTS":"#6aa3b4", 
+    "ENTERTAINMENT":"#416864", 
+    "OTHER":"#d6ebc1"
+}
 
 @csrf_exempt
 def default(request):
@@ -357,6 +366,35 @@ def index_list_by_date_and_user(request, date, user_id, future):
     else:
         return JsonResponse({'message': 'La petición debe ser GET o POST'}, status=400)
 
+
+@csrf_exempt
+def index_list_stats(request, user_id):
+    if request.method == 'GET':
+        try:
+            user = User.objects.get(pk=user_id)
+        except User.DoesNotExist:
+            return JsonResponse({'message': 'Usuario no encontrado'}, status=404)
+        events = Event.objects.filter(participants__id=user_id)
+        
+        event_data = list(events.values())
+        stats = []
+        stats_dict ={}
+        for event in event_data:
+            category_event= event['category']
+            if category_event in stats_dict:
+                stats_dict[category_event]+=1
+            else:
+                stats_dict[category_event]=1
+        total_events = len(event_data)
+        for category in stats_dict:
+            
+            stats.append({"category":category,"value":round(stats_dict[category]*100/total_events,1), "color":color_category[category]})
+
+        return JsonResponse(stats, safe=False, json_dumps_params={'indent': 4})
+        
+    else:
+        return JsonResponse({'message': 'La petición debe ser GET o POST'}, status=400)
+
 #Get the number of events for a user
 @csrf_exempt
 def index_count_events_by_user(request, user_id):
@@ -376,8 +414,29 @@ def index_count_events_by_user(request, user_id):
 def index_list_edit_event(request, pk):
     if request.method == 'PUT':
         data = json.loads(request.body)
-        event = User.objects.get(id=pk)
+        event = Event.objects.get(id=pk)
+        user = User.objects.get(pk=data['creator'])
+        data['creator'] = user
+
+        # For each tag, get the object from the name, if it doesn't exist, create it
+        tags = data['tags']
+        del data['tags']
+        tags_object = []
+        for tag in tags:
+            tag_object, created = Tag.objects.get_or_create(name=tag)
+            tags_object.append(tag_object)
+
+        # For each link, get the object from the text, if it doesn't exist, create it
+        links = data['links']
+        del data['links']
+        links_object = []
+        for link in links:
+            link_object, created = Link.objects.get_or_create(text=link)
+            links_object.append(link_object)
+
         assign_from_dict(event, data)
+        event.creator = user
+
         event.save()
         event_data = convert_to_json(event)
         return JsonResponse(event_data, json_dumps_params={'indent': 4})

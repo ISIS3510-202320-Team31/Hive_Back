@@ -1,5 +1,7 @@
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from django.db import connection
 from .models import User
 from event.models import Event
 from weight.models import Weight
@@ -249,59 +251,60 @@ def index_user_login(request):
 def index_top_creators(request):
     if request.method == 'GET':
         # Get the top 5 creators of events (Their name and the average of attendees of their events)
-        users = User.objects.all()
-        events = Event.objects.all()
-        users_data = list(users.values())
-
-        # Get the events created by the user
-        for user in users_data:
-            events_created = []
-            user['events_created'] = []
-
-            # Add in events created the IDs of the events created by the user
-            for event in events:
-                if event.creator.id == user['id']:
-                    events_created.append(event.id)
-            
-            user['events_created'] = events_created
-
-        # Remove all info except the name and the events created
-        for user in users_data:
-            user.pop('id')
-            user.pop('icon')
-            user.pop('login')
-            user.pop('password')
-            user.pop('email')
-            user.pop('verificated')
-            user.pop('role')
-            user.pop('career')
-            user.pop('birthdate')
-
-
-        # Get the average of attendees of the events created by the user
-        for user in users_data:
-            suma = 0
-            for event in user['events_created']:
-                suma += len(Event.objects.get(id=event).participants.all())
-
-            if len(user['events_created']) > 3:
-                suma = suma / len(user['events_created'])
-            else:
-                suma = 0
-
-            user['average'] = suma
-
-            user.pop('events_created')
-
         
+        raw_query = """
+            WITH CreatorWithMoreThan3 AS (
+            SELECT
+                uu.id AS creator_id,
+                uu.name AS creator_name,
+                COUNT(uu.id) AS event_count
+            FROM
+                user_user uu
+                JOIN event_event ee ON uu.id = ee.creator_id
+            GROUP BY
+                uu.id
+            HAVING
+                COUNT(uu.id) >= 3
+        )
 
-        # Sort the users by the average of attendees of their events
-        users_data.sort(key=lambda x: x['average'], reverse=True)
+        , AverageParticipants AS (
+            SELECT
+                c.creator_id,
+                AVG(ep.num_participants) AS avg_participants
+            FROM
+                CreatorWithMoreThan3 c
+                JOIN event_event ee ON c.creator_id = ee.creator_id
+                LEFT JOIN (
+                    SELECT
+                        event_id,
+                        COUNT(user_id) AS num_participants
+                    FROM
+                        event_event_participants
+                    GROUP BY
+                        event_id
+                ) ep ON ee.id = ep.event_id
+            GROUP BY
+                c.creator_id
+        )
 
-        # Get the top 5 users
-        top_users = users_data[:5]
+        SELECT
+            ap.creator_id,
+            c.creator_name,
+            ap.avg_participants
+        FROM
+            AverageParticipants ap
+            JOIN CreatorWithMoreThan3 c ON ap.creator_id = c.creator_id
+        ORDER BY
+            ap.avg_participants DESC
+        LIMIT 5"""
+        
+        with connection.cursor() as cursor:
+            cursor.execute(raw_query)
+            top_creators = cursor.fetchall()
 
-        return JsonResponse(top_users, safe=False, json_dumps_params={'indent': 4})
+        top_creators = [{'name': creator[1], 'average': creator[2]} for creator in top_creators]
+
+        return JsonResponse(top_creators, safe=False, json_dumps_params={'indent': 4})
 
     
     else:
@@ -312,34 +315,28 @@ def index_top_creators(request):
 def index_top_partners(request, user_id):
     if request.method == 'GET':
         #Get events of the user
-        events = Event.objects.all()
-        events_data = list(events.values())
-        user_events = []
-
-        #Get events of the user_id had attended
-        for event in events_data:
-            if user_id in event['participants']:
-                user_events.append(event)
+        user_events = Event.objects.filter(participants=user_id)
         
         #Get participants of the events
         top_partners = {}
         for event in user_events:
-            participants = list(event.participants.values())
+            participants = event.participants.exclude(id=user_id)
             for participant in participants:
-                if participant['id'] != user_id:
-                    if participant['id'] in top_partners:
-                        top_partners[participant['id']] += 1
-                    else:
-                        top_partners[participant['id']] = 1
+                if participant.id in top_partners:
+                    top_partners[participant.id] += 1
+                else:
+                    top_partners[participant.id] = 1
 
         #Sort the partners by the number of events that the user and the partner had attended
         top_partners = sorted(top_partners.items(), key=lambda x: x[1], reverse=True)
 
         #Get the name of the top five partners in a list
         top_partners_names = []
-        i=0
-        while i < 5 and i < len(top_partners):
-            top_partners_names.append(User.objects.get(id=top_partners[i][0]).name)
+        i = 0
+        while i < len(top_partners) and i < 5:
+            partner_id = top_partners[i][0]
+            partner_name = get_object_or_404(User, id=partner_id).name
+            top_partners_names.append(partner_name)
             i += 1
         
         return JsonResponse(top_partners_names, safe=False, json_dumps_params={'indent': 4})
