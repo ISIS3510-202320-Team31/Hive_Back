@@ -420,23 +420,31 @@ def index_list_edit_event(request, pk):
 
         # For each tag, get the object from the name, if it doesn't exist, create it
         tags = data['tags']
+        tags.append(data['category'])
         del data['tags']
         tags_object = []
         for tag in tags:
-            tag_object, created = Tag.objects.get_or_create(name=tag)
+            if tag == '' or tag is None:
+                continue
+            tag_object, created = Tag.objects.get_or_create(name=remover_acentos_y_minusculas(tag))
             tags_object.append(tag_object)
-
+        
         # For each link, get the object from the text, if it doesn't exist, create it
         links = data['links']
         del data['links']
         links_object = []
         for link in links:
+            if link == '' or link is None:
+                continue
             link_object, created = Link.objects.get_or_create(text=link)
             links_object.append(link_object)
 
-        assign_from_dict(event, data)
-        event.creator = user
-
+        event = Event(**data)
         event.save()
+
+        event.tags.set(tags_object)
+        event.links.set(links_object)
+
         event_data = convert_to_json(event)
+        event_data['creator'] = event_data['creator']['id']
         return JsonResponse(event_data, json_dumps_params={'indent': 4})
