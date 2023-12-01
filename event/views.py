@@ -18,7 +18,7 @@ color_category = {
     "CULTURAL":"#00c6ab", 
     "SPORTS":"#6aa3b4", 
     "ENTERTAINMENT":"#416864", 
-    "OTHERS":"#d6ebc1"
+    "OTHER":"#d6ebc1"
 }
 
 @csrf_exempt
