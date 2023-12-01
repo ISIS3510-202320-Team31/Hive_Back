@@ -415,6 +415,7 @@ def index_list_edit_event(request, pk):
     if request.method == 'PUT':
         data = json.loads(request.body)
         event = Event.objects.get(id=pk)
+
         user = User.objects.get(pk=data['creator'])
         data['creator'] = user
 
@@ -439,7 +440,8 @@ def index_list_edit_event(request, pk):
             link_object, created = Link.objects.get_or_create(text=link)
             links_object.append(link_object)
 
-        event = Event(**data)
+        assign_from_dict(event, data)
+        event.creator = user
         event.save()
 
         event.tags.set(tags_object)
