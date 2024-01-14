@@ -11,6 +11,9 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
 from pathlib import Path
+import os
+import dotenv
+dotenv.load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,12 +23,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-w+h2prug7zjh5)p+4i1!1topd4wl^ul6cc!wjd0tuc2d*t1305'
+SECRET_KEY = os.getenv('SECRET_KEY') or 'django'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -37,6 +40,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'event',
+    'user',
+    'tag',
+    'link',
+    'weight'
 ]
 
 MIDDLEWARE = [
@@ -73,13 +81,19 @@ WSGI_APPLICATION = 'hive_back.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    'default' : {                                    # conveniently, postgres on supabase as well
+        'ENGINE' : 'django.db.backends.postgresql',
+        'NAME' : 'postgres',
+        'HOST' : os.environ.get('SUPABASE_HOST'),
+        'PASSWORD': os.environ.get('SUPABASE_PW'),
+        'PORT': 5432,
+        'USER': 'postgres',
+        'CERT' : 'hive_back.prod-ca-2021.crt',             # download this from database/settings and put in your main app folder
     }
 }
-
+DATABASE_ROUTERS = ['hive_back.routers.CustomRouter']      # don't forget to set this variable so django knows where to find the router
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
